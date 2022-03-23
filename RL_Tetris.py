@@ -7,11 +7,7 @@ import tensorflow as tf
 pygame.font.init()
 
 # global variables
-WIDTH = 300
-HEIGHT = 720
-BLOCK_SIZE = 30 # Used for drawing later in the program
-PLAY_AREA_START = 120 # Combined with BLOCK_SIZE, this allows for blocks for
-                      # graphics above the play area.
+
 
 # AI Global Variables
 MAX_MEMORY = 100_000
@@ -116,9 +112,18 @@ class Piece():
 
 class Tetris():
         
-    def __init__(self):
+    def __init__(self, mode):
 
-        self.display = pygame.display.set_mode((WIDTH, HEIGHT))
+        if mode == 'player':
+            self.SPEED = 20
+        elif mode == 'machine': 
+            self.SPEED = 2      #The game is sped up by a factor of 10 if machine learning is used.
+        self.WIDTH = 300
+        self.HEIGHT = 720
+        self.BLOCK_SIZE = 30 # Used for drawing later in the program
+        self.PLAY_AREA_START = 120 # Combined with BLOCK_SIZE, this allows for blocks for
+                                   # graphics above the play area.
+        self.display = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
         pygame.display.set_caption('Tetris')
         self.clock = pygame.time.Clock()
         self.reset()
@@ -215,9 +220,9 @@ class Tetris():
                 # In order this line, sets the X co-ordinate, sets the Y co-ordinate
                 # sets the rectangle width, sets the rectangle height, sets the
                 # fill to full.
-                pygame.draw.rect(self.display, grid[i][j], ((0 + j * BLOCK_SIZE), (PLAY_AREA_START + i * BLOCK_SIZE), BLOCK_SIZE, BLOCK_SIZE), 0)
+                pygame.draw.rect(self.display, grid[i][j], ((0 + j * self.BLOCK_SIZE), (self.PLAY_AREA_START + i * self.BLOCK_SIZE), self.BLOCK_SIZE, self.BLOCK_SIZE), 0)
         # Draws the playable area Border
-        pygame.draw.rect(self.display, (211,211,211), (0, PLAY_AREA_START, 300, 600), 4)
+        pygame.draw.rect(self.display, (211,211,211), (0, self.PLAY_AREA_START, 300, 600), 4)
         self._draw_gridLines()
         pygame.display.flip()
 
@@ -238,23 +243,23 @@ class Tetris():
         self._draw_grid(self.grid)
 
         # Places the label at the correct position.
-        self.display.blit(label, ((WIDTH / 2) -  (label.get_width() / 2), (PLAY_AREA_START / 4) - (label.get_height() / 2)))
+        self.display.blit(label, ((self.WIDTH / 2) -  (label.get_width() / 2), (self.PLAY_AREA_START / 4) - (label.get_height() / 2)))
         self.display.blit(score_label, (0, 0))
-        self.display.blit(level_label, (WIDTH - level_label.get_width(), 0))
-        self.display.blit(lines_label, ((WIDTH / 2) -  (lines_label.get_width() / 2), (PLAY_AREA_START / 2) - (lines_label.get_height() / 2)))
+        self.display.blit(level_label, (self.WIDTH - level_label.get_width(), 0))
+        self.display.blit(lines_label, ((self.WIDTH / 2) -  (lines_label.get_width() / 2), (self.PLAY_AREA_START / 2) - (lines_label.get_height() / 2)))
         # Updates the pygame window with the newly drawn frame.
         pygame.display.flip()
 
     def _draw_gridLines(self):
         x = 0
-        y = PLAY_AREA_START
+        y = self.PLAY_AREA_START
 
         for i in range(len(self.grid)):
             # Draws the Horizontal grid lines.
-            pygame.draw.line(self.display, (128, 128, 128), (x, y + i * BLOCK_SIZE), (x + WIDTH, y + i * BLOCK_SIZE))
+            pygame.draw.line(self.display, (128, 128, 128), (x, y + i * self.BLOCK_SIZE), (x + self.WIDTH, y + i * self.BLOCK_SIZE))
             for j in range(len(self.grid[i])):
                 # Draws the Vertical grid lines.
-                pygame.draw.line(self.display, (128, 128, 128), (x + j * BLOCK_SIZE, y), (x + j * BLOCK_SIZE, y + 600))
+                pygame.draw.line(self.display, (128, 128, 128), (x + j * self.BLOCK_SIZE, y), (x + j * self.BLOCK_SIZE, y + 600))
 
 
     def _move(self, direction):
@@ -437,8 +442,13 @@ class Tetris():
 ###################################################
 class Agent():
 
-    def __init__(self):
-        pass
+    def __init__(self, episodes, max_steps, learning_rate, gamma, epsilon):
+        self.episodes = epsiodes
+        self.max_steps = max_steps
+        self.alpha = learning_rate
+        self.gamma = discount_factor
+        self.epsilon = epsilon #The probability of choosing a random action
+        self.game = Tetris('machine')
 
     def get_state(self, game):
         pass
@@ -455,8 +465,19 @@ class Agent():
     def get_action(self, state):
         pass
 
-def train():
+def setReinforcementVariables():
     pass
+
+def getReinforcementVariables():
+    with open("variables.rl", 'r') as f:
+        lines = f.readlines()
+        episodes = lines[0]
+        max_steps = lines[1]
+        learning_rate = lines[2]
+        discount_factor = lines[3]
+        epsilon = lines[4]
+    return episodes, max_steps, learning_rate, discount_factor, epsilon
+            
 
 
 ###################################################
@@ -469,14 +490,15 @@ class Model():
     
                 
 if __name__ == '__main__':
-    temp = input()
+    temp = input("yos")
     if temp == 'play':
-        game = Tetris()
+        game = Tetris('player')
         while True:
             reward, height, posit, locked_posit = game.step()
 
     elif temp == 'train':
-        train()
+        episodes, max_steps, learning_rate, discount_factor, epsilon = getReinforcementVariables()
+        Agent = Agent(episodes, max_steps, learning_rate, discount_factor, epsilon)
 
     else:
         quit()
